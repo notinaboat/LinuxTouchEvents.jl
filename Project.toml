@@ -1,0 +1,4 @@
+name = "LinuxTouchEvents"
+uuid = "47506264-cfa6-4ce7-b091-1fe6ecfeb671"
+authors = ["notinaboat <notinaboat@icloud.com>"]
+version = "0.1.0"
