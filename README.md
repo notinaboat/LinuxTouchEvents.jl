@@ -9,6 +9,9 @@ Use this module to get touch input in terminal-mode or frame-buffer apps.
 (Not intended for apps that use a high-level API like GTK/X11 or SDL.)
 
 
+## Interface
+
+
 ```
 TouchEventChannel([dev="/dev/input/event0"])
 ```

@@ -91,6 +91,7 @@ Base.close(t::TouchEventChannel) = close(t.io)
 
 readme() = join([
     Docs.doc(@__MODULE__),
+    "## Interface\n",
     Docs.@doc TouchEventChannel()
    ], "\n\n")
 
