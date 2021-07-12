@@ -15,8 +15,13 @@ module LinuxTouchEvents
 
 export TouchEventChannel
 
+using ReadmeDocs
+using UnixIO
 
-"""
+
+README"## Interface"
+
+README"""
     TouchEventChannel([dev="/dev/input/event0"])
 
 Open a channel to read touch events from a Linux Input Event device.
@@ -30,12 +35,12 @@ e.g.
     end
 """
 struct TouchEventChannel
-    io::IOStream
+    io::UnixFD
     width::Int
     height::Int
     function TouchEventChannel(dev="/dev/input/event0")
         size = read("/sys/class/graphics/fb0/virtual_size", String)
-        new(open(dev; read=true), (parse(Int, x) for x in split(size, ","))...)
+        new(UnixIO.open(dev), (parse(Int, x) for x in split(size, ","))...)
     end
 end
 
@@ -85,15 +90,6 @@ end
 
 Base.close(t::TouchEventChannel) = close(t.io)
 
-
-
-# Documentation.
-
-readme() = join([
-    Docs.doc(@__MODULE__),
-    "## Interface\n",
-    Docs.@doc TouchEventChannel()
-   ], "\n\n")
 
 
 end # module
