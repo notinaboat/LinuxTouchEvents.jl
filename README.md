@@ -11,20 +11,17 @@ Use this module to get touch input in terminal-mode or frame-buffer apps.
 
 ## Interface
 
-
-```
-TouchEventChannel([dev="/dev/input/event0"])
-```
+    TouchEventChannel([dev="/dev/input/event0"])
 
 Open a channel to read touch events from a Linux Input Event device.
 
 e.g.
 
-```
-c = TouchEventChannel()
-while true
-    x, y = take!(c)
-    println("Touch at ($x, $y)")
-end
-```
+    c = TouchEventChannel()
+    while true
+        x, y = take!(c)
+        println("Touch at (\$x, \$y)")
+    end
+
+
 

@@ -2,3 +2,7 @@ name = "LinuxTouchEvents"
 uuid = "47506264-cfa6-4ce7-b091-1fe6ecfeb671"
 authors = ["notinaboat <notinaboat@icloud.com>"]
 version = "0.1.0"
+
+[deps]
+ReadmeDocs = "c63066b3-de92-487d-9da7-7c375a07912b"
+UnixIO = "86724fa0-f1e0-464a-a4b2-d754f3ca1f13"
