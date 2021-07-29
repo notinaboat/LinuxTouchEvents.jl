@@ -17,6 +17,8 @@ export TouchEventChannel
 
 using ReadmeDocs
 using UnixIO
+using UnixIO: C
+using UnixIO.Debug
 
 
 README"## Interface"
@@ -40,7 +42,8 @@ struct TouchEventChannel
     height::Int
     function TouchEventChannel(dev="/dev/input/event0")
         size = read("/sys/class/graphics/fb0/virtual_size", String)
-        new(UnixIO.open(dev), (parse(Int, x) for x in split(size, ","))...)
+        new(UnixIO.open(dev, C.O_RDONLY),
+            (parse(Int, x) for x in split(size, ","))...)
     end
 end
 
@@ -58,13 +61,13 @@ end
 read_event(io) = reinterpret(input_event, read(io, sizeof(input_event)))[1]
 
 
-function wait_for_event(io, type, code, value=nothing)
+@db function wait_for_event(io, type, code, value=nothing)
     while true
-        e = read_event(io)
+        e = read_event(io)                                             ;@db 4 e
         if e.type == type &&
            e.code == code &&
            (e.value == value || value == nothing)
-            return e.value
+            @db return e.value
         end
     end
 end
@@ -80,11 +83,11 @@ const ABS_X  = 0x00
 const ABS_Y  = 0x01
 
 
-function Base.take!(t::TouchEventChannel)
+@db function Base.take!(t::TouchEventChannel)
     wait_for_event(t.io, EV_KEY, BTN_TOUCH, 1)
     x = wait_for_event(t.io, EV_ABS, ABS_X)
     y = wait_for_event(t.io, EV_ABS, ABS_Y)
-    return x/t.width, y/t.height
+    @db return x/t.width, y/t.height
 end
 
 
