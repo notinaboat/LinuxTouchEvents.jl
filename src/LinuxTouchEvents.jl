@@ -37,7 +37,7 @@ e.g.
     end
 """
 struct TouchEventChannel
-    io::UnixFD
+    io::UnixIO.FD
     width::Int
     height::Int
     function TouchEventChannel(dev="/dev/input/event0")
