@@ -9,7 +9,7 @@ export JULIA_UNIX_IO_DEBUG_LEVEL = 4
 
 all: README.md
 
-JL := julia
+JL := julia15
 
 README.md: src/$(PACKAGE).jl
 	julia --project -e "using $(PACKAGE); \
