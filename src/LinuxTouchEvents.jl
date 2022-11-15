@@ -18,7 +18,6 @@ export TouchEventChannel
 using ReadmeDocs
 using UnixIO
 using UnixIO: C
-using UnixIO.Debug
 
 
 README"## Interface"
@@ -40,10 +39,12 @@ struct TouchEventChannel
     io::UnixIO.FD
     width::Int
     height::Int
+    buffer::Channel{Tuple{Float64, Float64}}
     function TouchEventChannel(dev="/dev/input/event0")
         size = read("/sys/class/graphics/fb0/virtual_size", String)
         new(UnixIO.open(dev, C.O_RDONLY),
-            (parse(Int, x) for x in split(size, ","))...)
+            (parse(Int, x) for x in split(size, ","))...,
+            Channel{Tuple{Float64, Float64}}(1))
     end
 end
 
@@ -58,16 +59,22 @@ struct input_event
 end
 
 
-read_event(io) = reinterpret(input_event, read(io, sizeof(input_event)))[1]
+function read_event(io)
+    x = read(io, sizeof(input_event))
+    return isempty(x) ? nothing : reinterpret(input_event, x)[1]
+end
 
 
-@db function wait_for_event(io, type, code, value=nothing)
+function wait_for_event(io, type, code, value=nothing)
     while true
-        e = read_event(io)                                             ;@db 4 e
+        e = read_event(io)
+        if e == nothing
+            return e
+        end
         if e.type == type &&
            e.code == code &&
            (e.value == value || value == nothing)
-            @db return e.value
+            return e.value
         end
     end
 end
@@ -82,12 +89,38 @@ const EV_ABS = 0x03
 const ABS_X  = 0x00
 const ABS_Y  = 0x01
 
-
-@db function Base.take!(t::TouchEventChannel)
+function wait_for_touch(t)
     wait_for_event(t.io, EV_KEY, BTN_TOUCH, 1)
+end
+
+
+function wait_for_touch_coordinates(t)
     x = wait_for_event(t.io, EV_ABS, ABS_X)
     y = wait_for_event(t.io, EV_ABS, ABS_Y)
-    @db return x/t.width, y/t.height
+    return x/t.width, y/t.height
+end
+
+
+function Base.take!(t::TouchEventChannel)
+    if isready(t.buffer)
+        return take!(t.buffer)
+    end
+    wait_for_touch(t)
+    wait_for_touch_coordinates(t)
+end
+
+
+function Base.isready(t::TouchEventChannel; timeout=0)
+    if isempty(t.buffer)
+        UnixIO.set_timeout(t.io, timeout)
+        touch = wait_for_touch(t)
+        UnixIO.set_timeout(t.io, Inf)
+        if touch != nothing
+            put!(t.buffer, wait_for_touch_coordinates(t))
+        end
+    end
+
+    return isready(t.buffer)
 end
 
 
